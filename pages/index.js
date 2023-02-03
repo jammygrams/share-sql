@@ -1,8 +1,8 @@
 import { ChildAccordion, Accordions } from "../components/Accordion";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { signInAnonymously } from "firebase/auth";
-import { auth, firestore } from '../lib/firebase'
-import { collection, doc, setDoc } from "firebase/firestore"; 
+import { auth, db } from '../lib/firebase'
+import { doc, setDoc } from "firebase/firestore"; 
 import CssBaseline from '@mui/material/CssBaseline';
 
 const darkTheme = createTheme({
@@ -22,7 +22,7 @@ async function createUser() {
   }
   console.log("User ID: ", userUid);
   try {
-    await setDoc(doc(firestore, "users", userUid), userDoc);
+    await setDoc(doc(db, "users", userUid), userDoc);
   } catch (e) {
     console.error("Error adding document: ", e);
   }

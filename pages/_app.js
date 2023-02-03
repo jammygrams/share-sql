@@ -1,25 +1,20 @@
 import { UserContext } from "@/lib/context";
-import { useEffect } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../lib/firebase"
 
 export default function App({ Component, pageProps }) {
-  // const auth = getAuth();
-  // onAuthStateChanged(auth, (user) => {
-  //   if (user) {
-  //     // User is signed in, see docs for a list of available properties
-  //     // https://firebase.google.com/docs/reference/js/firebase.User
-  //     const uid = user.uid;
-  //     // ...
-  //   } else {
-  //     // User is signed out
-  //     // ...
-  //     console.log("user signed out!")
-  //   }
-  // });
-// value={{ uid }}
+  var uid = null
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      uid = user.uid;
+      console.log(`user is signed in as ${uid}!`);
+    } else {
+      console.log("user is signed out!");
+    }
+  });
 
   return (
-    <UserContext.Provider> 
+    <UserContext.Provider value={{ uid }}> 
       <Component {...pageProps} />
     </UserContext.Provider>
   )
