@@ -103,27 +103,10 @@ export function ChildAccordion({
   );
 }
 
-export function Accordions() {
-  function AddAccordionButton({ onClick }) {
-    return (
-      <Button variant="text" onClick={onClick}>
-        <AddIcon />
-      </Button>
-    );
-  }
-
-  const [lines, setLines] = React.useState([0]);
-
-  function handleAddAccordion() {
-    setLines([...lines, lines.length]);
-  }
-
+export function AddAccordionButton({ onClick }) {
   return (
-    <>
-      {lines.map((m) => (
-        <ChildAccordion key={m} id={m + 2} />
-      ))}
-      <AddAccordionButton onClick={handleAddAccordion} />
-    </>
+    <Button variant="text" onClick={onClick}>
+      <AddIcon />
+    </Button>
   );
 }
