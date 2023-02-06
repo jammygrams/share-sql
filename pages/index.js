@@ -1,16 +1,8 @@
 import React, { useEffect } from "react";
 import { ChildAccordion, AddAccordionButton } from "../components/Accordion";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { createUserAndDoc, db, auth } from "../lib/firebase";
 import { collection, serverTimestamp, getDocs } from "firebase/firestore";
-import CssBaseline from "@mui/material/CssBaseline";
 import { onAuthStateChanged } from "firebase/auth";
-
-const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-  },
-});
 
 const tutorialDoc = {
   content: "SELECT this, that FROM table1 WHERE that == '9'",
@@ -27,7 +19,7 @@ const newDoc = {
 };
 
 export default function Home() {
-  const [uid, setUID] = React.useState(null);
+  const [uid, setUID] = React.useState(null); // uid is not nec as state as not used
   const [documents, setDocuments] = React.useState([]);
 
   useEffect(() => {
@@ -55,8 +47,6 @@ export default function Home() {
 
   return (
     <>
-      <ThemeProvider theme={darkTheme}>
-        <CssBaseline />
         {firstDocument ? (
           <ChildAccordion
             id={1}
@@ -74,7 +64,6 @@ export default function Home() {
           />
         ))}
         <AddAccordionButton onClick={handleAddAccordion} />
-      </ThemeProvider>
     </>
   );
 }
