@@ -1,9 +1,9 @@
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import ButtonAppBar from "@/components/Appbar";
-import { UserContext } from '../lib/context';
+import { UserContext } from "../lib/context";
 import { createUserAndDoc, db, auth } from "../lib/firebase";
-import { tutorialDoc } from '../components/ExampleDocs'
+import { tutorialDoc } from "../components/ExampleDocs";
 import { collection, getDocs } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import React, { useEffect } from "react";
@@ -25,7 +25,13 @@ export default function App({ Component, pageProps }) {
         setUser(authUser);
         getDocs(collection(db, "users", authUser.uid, "code")).then(
           (querySnapshot) => {
-            setDocuments(querySnapshot.docs.map((doc) => doc.data()));
+            setDocuments(
+              querySnapshot.docs.map((doc, idx) => ({
+                // index: idx,
+                id: doc.id,
+                data: doc.data(),
+              }))
+            );
           }
         );
       } else {
@@ -36,13 +42,18 @@ export default function App({ Component, pageProps }) {
 
   return (
     <>
-    <UserContext.Provider value={{ user, documents, setDocuments }}>
-      <ThemeProvider theme={darkTheme}>
-        <CssBaseline />
-        <ButtonAppBar />
-        <Component {...pageProps} />
-      </ThemeProvider>
-    </UserContext.Provider>
+      <UserContext.Provider value={{ user, documents, setDocuments }}>
+        <ThemeProvider theme={darkTheme}>
+          <CssBaseline />
+          <ButtonAppBar />
+          <Component
+            {...pageProps}
+            // documents={documents}
+            // user={user}
+            // setDocuments={setDocuments}
+          />
+        </ThemeProvider>
+      </UserContext.Provider>
     </>
   );
 }

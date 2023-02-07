@@ -10,7 +10,7 @@ import { useContext } from 'react';
 import { UserContext } from '@/lib/context';
 
 export default function ButtonAppBar() {
-  const { user, documents, setDocuments } = useContext(UserContext)
+  // const { user, documents, setDocuments } = useContext(UserContext)
 
   return (
     <Box sx={{ flexGrow: 1 }}>
