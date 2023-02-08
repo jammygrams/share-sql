@@ -17,6 +17,7 @@ const darkTheme = createTheme({
 export default function App({ Component, pageProps }) {
   const [user, setUser] = React.useState(null); // user is not nec as state as not used
   const [documents, setDocuments] = React.useState([]);
+  const [isLoading, setLoading] = React.useState(false);
 
   // TODO: move this to firebase.js so all that code is together?
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function App({ Component, pageProps }) {
 
   return (
     <>
-      <UserContext.Provider value={{ user, documents, setDocuments }}>
+      <UserContext.Provider value={{ user, documents, setDocuments, isLoading, setLoading }}>
         <ThemeProvider theme={darkTheme}>
           <CssBaseline />
           <ButtonAppBar />

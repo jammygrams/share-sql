@@ -7,11 +7,23 @@ import Toolbar from "@mui/material/Toolbar";
 import SaveIcon from "@mui/icons-material/Save";
 import IconButton from "@mui/material/IconButton";
 import { saveDocumentsFirestore } from "../lib/firebase";
+import Loader from "./Loader"
 import { useContext } from "react";
 import { UserContext } from "@/lib/context";
 
 export default function ButtonAppBar() {
-  const { user, documents, setDocuments } = useContext(UserContext);
+  const { user, documents, setDocuments, isLoading, setLoading } = useContext(UserContext);
+
+  async function handleSave() {
+    // TODO: this is actually too fast to see the loader
+    setLoading(true)
+    await saveDocumentsFirestore({
+      uid: user.uid,
+      documents,
+      setDocuments,
+    })
+    setLoading(false)
+  }
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -23,23 +35,17 @@ export default function ButtonAppBar() {
               edge="start"
               color="inherit"
               aria-label="save"
-              // important for onClick to be () => ..., otherwise function just calls!
-              onClick={() => {
-                saveDocumentsFirestore({
-                  uid: user.uid,
-                  documents,
-                  setDocuments,
-                });
-              }}
+              // important for onClick to be {() => functionName()}, otherwise function just calls!
+              onClick={handleSave}
               sx={{ mr: 2 }}
             >
               <SaveIcon />
             </IconButton>
           ) : null}
+          <Loader show={isLoading} />
           {/* <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             News
           </Typography> */}
-          {/* <Button color="inherit">Login</Button> */}
         </Toolbar>
       </AppBar>
     </Box>

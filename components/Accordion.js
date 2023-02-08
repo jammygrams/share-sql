@@ -10,12 +10,14 @@ import Button from "@mui/material/Button";
 import dynamic from "next/dynamic";
 import { Typography } from "@mui/material";
 import { queryGPT } from  "@/lib/openai"
+import { UserContext } from "@/lib/context";
 
 // Need to import CodeEditor with no server side rendering
 // ref: https://github.com/securingsincity/react-ace/issues/1044
 const CodeEditor = dynamic(() => import("./CodeEditor"), { ssr: false });
 
-export function ChildAccordion({ index, documents, setDocuments }) {
+export function ChildAccordion({ index }) {
+  const { user, documents, setDocuments, isLoading, setLoading } = React.useContext(UserContext);
   // make sure first accordion is expanded at start
   var isExpanded = null;
   index === 0 ? (isExpanded = true) : (isExpanded = false);
@@ -53,10 +55,12 @@ export function ChildAccordion({ index, documents, setDocuments }) {
     event.stopPropagation(); // Don't want to expand accordion
   };
 
-  const handleGenerateSummary = () => {
-    queryGPT(documents[index].data.content).then((value) => {
+  const handleGenerateSummary = async () => {
+    setLoading(true);
+    await queryGPT(documents[index].data.content).then((value) => {
       updateDocumentSummary(value);
-    }); // for async
+    });
+    setLoading(false);
   };
 
   const handleContentEdit = (value) => {

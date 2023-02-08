@@ -4,7 +4,7 @@ import { newDoc } from "../components/ExampleDocs";
 import { ChildAccordion, AddAccordionButton } from "../components/Accordion";
 
 export default function Home() {
-  const { user, documents, setDocuments } = useContext(UserContext);
+  const { user, documents, setDocuments, isLoading, setLoading } = useContext(UserContext);
 
   function handleAddAccordion() {
     setDocuments([...documents, newDoc]);
@@ -15,8 +15,6 @@ export default function Home() {
       {documents.map((doc, idx) => {
         return (
           <ChildAccordion
-            documents={documents}
-            setDocuments={setDocuments}
             index={idx}
             key={idx}
           />
