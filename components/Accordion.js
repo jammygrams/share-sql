@@ -1,7 +1,6 @@
 import React from "react";
 import Grid from "@mui/material/Grid";
 import Accordion from "@mui/material/Accordion";
-import { serverTimestamp } from "firebase/firestore";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -10,38 +9,13 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import dynamic from "next/dynamic";
 import { Typography } from "@mui/material";
-import { newDoc } from "./ExampleDocs";
+import { queryGPT } from  "@/lib/openai"
 
 // Need to import CodeEditor with no server side rendering
 // ref: https://github.com/securingsincity/react-ace/issues/1044
 const CodeEditor = dynamic(() => import("./CodeEditor"), { ssr: false });
 
-async function queryGPT(SQLCode) {
-  try {
-    const response = await fetch("/api/openai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ sql: SQLCode }),
-    });
-    const data = await response.json();
-    if (response.status !== 200) {
-      throw (
-        data.error || new Error(`Request failed with status ${response.status}`)
-      );
-    }
-    console.log(`Prediction: ${data.result}`);
-    return data.result;
-  } catch (error) {
-    // Consider implementing your own error handling logic here
-    console.error(error);
-    alert(error.message);
-  }
-}
-
 export function ChildAccordion({ index, documents, setDocuments }) {
-  console.log(`Accordion ${index}: `, documents[index])
   // make sure first accordion is expanded at start
   var isExpanded = null;
   index === 0 ? (isExpanded = true) : (isExpanded = false);
