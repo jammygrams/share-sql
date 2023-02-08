@@ -11,11 +11,12 @@ export default function CodeEditor({ onCodeChange, initialValue }) {
       // placeholder="SELECT id, user, friend FROM table1 JOIN table2"
       mode="mysql"
       theme="monokai"
-      name="blah2"
+      // name="blah2"
       //   onLoad={this.onLoad}
+      width="100%"
+      showPrintMargin={false}
       onChange={onCodeChange}
       fontSize={14}
-      showPrintMargin={true}
       showGutter={true}
       highlightActiveLine={true}
       // value={`SELECT id, user, friend FROM table1 JOIN table2`}

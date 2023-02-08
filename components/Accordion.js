@@ -48,11 +48,13 @@ export function ChildAccordion({ index }) {
 
   const handleSummaryTextEdit = (event) => {
     event.stopPropagation(); // Don't want to expand accordion
+    setExpanded(true); // always keep open on edit
     updateDocumentSummary(event.target.value);
   };
 
   const handleSummaryTextClick = (event) => {
     event.stopPropagation(); // Don't want to expand accordion
+    setExpanded(true); // always keep open on click
   };
 
   const handleGenerateSummary = async () => {
