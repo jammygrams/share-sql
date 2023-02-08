@@ -41,7 +41,8 @@ async function queryGPT(SQLCode) {
 }
 
 export function ChildAccordion({ index, documents, setDocuments }) {
-  // make sure first accordion is open at start
+  console.log(`Accordion ${index}: `, documents[index])
+  // make sure first accordion is expanded at start
   var isExpanded = null;
   index === 0 ? (isExpanded = true) : (isExpanded = false);
 
@@ -79,7 +80,6 @@ export function ChildAccordion({ index, documents, setDocuments }) {
   };
 
   const handleGenerateSummary = () => {
-    // TODO: no longer right
     queryGPT(documents[index].data.content).then((value) => {
       updateDocumentSummary(value);
     }); // for async
