@@ -7,22 +7,25 @@ import Toolbar from "@mui/material/Toolbar";
 import SaveIcon from "@mui/icons-material/Save";
 import IconButton from "@mui/material/IconButton";
 import { saveDocumentsFirestore } from "../lib/firebase";
-import Loader from "./Loader"
+import Loader from "./Loader";
 import { useContext } from "react";
 import { UserContext } from "@/lib/context";
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export default function ButtonAppBar() {
-  const { user, documents, setDocuments, isLoading, setLoading } = useContext(UserContext);
+  const { user, documents, setDocuments, isLoading, setLoading } =
+    useContext(UserContext);
 
   async function handleSave() {
-    // TODO: this is actually too fast to see the loader
-    setLoading(true)
+    setLoading(true);
     await saveDocumentsFirestore({
       uid: user.uid,
       documents,
       setDocuments,
-    })
-    setLoading(false)
+    });
+    await delay(400); // otherwise too fast to see the loader
+    setLoading(false);
   }
 
   return (

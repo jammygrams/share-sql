@@ -17,7 +17,7 @@
 * multiplayer
 
 **lower priority**
-* loading symbol while waiting for response generate?
+* toast for save complete? duplicates above?
 * "remove accordion" button and update doc (may be painful again)
 * display tables used in query in summary
 * format user input sql into proper sql, will be important for gpt (requires thought - existing solution?)
