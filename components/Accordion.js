@@ -8,6 +8,8 @@ import MuiAccordionSummary from "@mui/material/AccordionSummary";
 import MuiAccordion from "@mui/material/Accordion";
 import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -15,6 +17,7 @@ import dynamic from "next/dynamic";
 import { Typography } from "@mui/material";
 import { queryGPT } from "@/lib/openai";
 import { UserContext } from "@/lib/context";
+import { deleteDocumentFirestore } from "@/lib/firebase";
 
 // Need to import CodeEditor with no server side rendering
 // ref: https://github.com/securingsincity/react-ace/issues/1044
@@ -116,6 +119,14 @@ export function ChildAccordion({ index }) {
     setDocuments(newDocuments);
   };
 
+  const handleDeleteClick = () => {
+    if (documents[index].id) {
+      deleteDocumentFirestore({ uid: user.uid, docId: documents[index].id });
+    }
+    const newDocuments = documents.filter((doc, idx) => idx != index);
+    setDocuments(newDocuments);
+  };
+
   return (
     <div>
       <Accordion expanded={expanded}>
@@ -128,7 +139,7 @@ export function ChildAccordion({ index }) {
             <Grid item xs={0.5} style={{ textAlign: "center" }}>
               <Typography variant="button">{`${index + 1}.`}</Typography>
             </Grid>
-            <Grid item xs={11.5}>
+            <Grid item xs={11.0}>
               <TextField
                 fullWidth
                 onClick={handleSummaryTextClick}
@@ -138,6 +149,18 @@ export function ChildAccordion({ index }) {
                 label="Summary"
                 variant="standard"
               />
+            </Grid>
+            <Grid item xs={0.5}>
+              <IconButton
+                // size="large"
+                edge="start"
+                color="inherit"
+                aria-label="delete"
+                onClick={handleDeleteClick}
+                sx={{ mr: 2 }}
+              >
+                <DeleteIcon />
+              </IconButton>
             </Grid>
           </Grid>
         </AccordionSummary>
