@@ -2,8 +2,12 @@ import { serverTimestamp } from "firebase/firestore";
 
 export const tutorialDoc = {
   // created in firebase so don't need id structure
-    content: "SELECT this, that FROM table1 WHERE that == '9'",
-    summary: "Return all this where that equals 9",
+    content: `
+    SELECT DISTINCT ON (customer)
+      id, customer, total
+    FROM purchases
+    ORDER BY customer, total DESC, id;`,
+    summary: "Select the highest purchase total for each customer.",
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
