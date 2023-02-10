@@ -150,7 +150,7 @@ export function ChildAccordion({ index }) {
                 variant="standard"
               />
             </Grid>
-            <Grid item xs={0.5}>
+            <Grid item xs={0.5} align="center">
               <IconButton
                 // size="large"
                 edge="start"

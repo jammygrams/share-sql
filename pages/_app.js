@@ -17,7 +17,8 @@ export default function App({ Component, pageProps }) {
   const [isLoading, setLoading] = React.useState(false);
 
   useEffect(() => {
-    setUpUserAndDocs({ documents, setDocuments, setUser });
+    setLoading(true)
+    setUpUserAndDocs({ documents, setDocuments, setUser }).then(() => {setLoading(false)})
   }, []);
 
   return (
