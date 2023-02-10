@@ -19,7 +19,6 @@ import { deleteDocumentFirestore, saveDocumentFirestore } from "@/lib/firebase";
 
 // only debounce the saving! https://stackoverflow.com/questions/68938631/set-textfield-value-after-debounce-not-working
 
-
 // Need to import CodeEditor with no server side rendering
 // ref: https://github.com/securingsincity/react-ace/issues/1044
 const CodeEditor = dynamic(() => import("./CodeEditor"), { ssr: false });
@@ -52,6 +51,9 @@ const AccordionSummary = styled((props) => (
   },
 }));
 
+// This works because the function isn't recreated everytime ChildAccordion is rerendered (every keystroke)
+const debounceSave = debounce(saveDocumentFirestore, 500); 
+
 export function ChildAccordion({ index }) {
   const { user, documents, setDocuments, isLoading, setLoading } =
     React.useContext(UserContext);
@@ -73,7 +75,7 @@ export function ChildAccordion({ index }) {
     setExpanded(!expanded);
   };
 
-  const handleSummaryTextEdit = async (event) => {
+  const handleSummaryTextEdit = (event) => {
     event.preventDefault();
     event.stopPropagation(); // Don't want to expand accordion
     setExpanded(true); // always keep open on edit
@@ -82,16 +84,13 @@ export function ChildAccordion({ index }) {
       data: { ...documents[index].data, summary: event.target.value },
     };
     updateDocument(newDoc);
-    await saveDocumentFirestore({
-      uid: user.uid,
-      document: newDoc,
-    });
+    return newDoc;
   };
 
-  // const debouncedHandleSummaryEdit = React.useCallback(
-  //   debounce(handleSummaryTextEdit, 500),
-  //   []
-  // );
+  const debouncedHandleSummaryEdit = (event) => {
+    const newDoc = handleSummaryTextEdit(event);
+    debounceSave({ uid: user.uid, document: newDoc });
+  };
 
   const handleSummaryTextClick = (event) => {
     event.stopPropagation(); // Don't want to expand accordion
@@ -105,7 +104,7 @@ export function ChildAccordion({ index }) {
       ...documents[index],
       data: { ...documents[index].data, summary: newSummary },
     };
-    updateDocument(await newDoc);
+    updateDocument(newDoc);
     await saveDocumentFirestore({
       uid: user.uid,
       document: newDoc,
@@ -125,10 +124,10 @@ export function ChildAccordion({ index }) {
     });
   };
 
-  // const debouncedHandleContentEdit = React.useCallback(
-  //   debounce(handleContentEdit, 500),
-  //   []
-  // );
+  const debouncedHandleContentEdit = React.useCallback(
+    debounce(handleContentEdit, 500),
+    []
+  );
 
   const handleDeleteClick = () => {
     // TODO: why does this work? uses promises differently
@@ -155,7 +154,7 @@ export function ChildAccordion({ index }) {
               <TextField
                 fullWidth
                 onClick={handleSummaryTextClick}
-                onChange={handleSummaryTextEdit}
+                onChange={debouncedHandleSummaryEdit}
                 id="standard-basic"
                 value={documents[index].data.summary}
                 label="Summary"
@@ -185,7 +184,7 @@ export function ChildAccordion({ index }) {
         </AccordionSummary>
         <AccordionDetails>
           <CodeEditor
-            onCodeChange={handleContentEdit}
+            onCodeChange={debouncedHandleContentEdit}
             initialValue={documents[index].data.content}
           />
           <Button variant="text" onClick={handleGenerateSummary}>
