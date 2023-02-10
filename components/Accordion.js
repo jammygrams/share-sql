@@ -17,7 +17,7 @@ import { queryGPT } from "@/lib/openai";
 import { UserContext } from "@/lib/context";
 import { deleteDocumentFirestore, saveDocumentFirestore } from "@/lib/firebase";
 
-// only debounce the saving! https://stackoverflow.com/questions/68938631/set-textfield-value-after-debounce-not-working
+// TODO: understand the difference in debouncing!
 
 // Need to import CodeEditor with no server side rendering
 // ref: https://github.com/securingsincity/react-ace/issues/1044
@@ -76,7 +76,6 @@ export function ChildAccordion({ index }) {
   };
 
   const handleSummaryTextEdit = (event) => {
-    event.preventDefault();
     event.stopPropagation(); // Don't want to expand accordion
     setExpanded(true); // always keep open on edit
     const newDoc = {
@@ -117,7 +116,7 @@ export function ChildAccordion({ index }) {
       ...documents[index],
       data: { ...documents[index].data, content: value },
     };
-    updateDocument(newDoc); // will make sure new ID is included
+    updateDocument(newDoc);
     await saveDocumentFirestore({
       uid: user.uid,
       document: newDoc,
@@ -160,17 +159,9 @@ export function ChildAccordion({ index }) {
                 label="Summary"
                 variant="standard"
               />
-              {/* <input
-                onClick={handleSummaryTextClick}
-                onChange={debouncedHandleSummaryEdit}
-                type="text"
-                // placeholder="Type a query..."
-                value={documents[index].data.summary}
-              /> */}
             </Grid>
             <Grid item xs={0.5} align="center">
               <IconButton
-                // size="large"
                 edge="start"
                 color="inherit"
                 aria-label="delete"
