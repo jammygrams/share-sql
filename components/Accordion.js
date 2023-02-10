@@ -17,7 +17,7 @@ import dynamic from "next/dynamic";
 import { Typography } from "@mui/material";
 import { queryGPT } from "@/lib/openai";
 import { UserContext } from "@/lib/context";
-import { deleteDocumentFirestore } from "@/lib/firebase";
+import { deleteDocumentFirestore, saveDocumentFirestore } from "@/lib/firebase";
 
 // Need to import CodeEditor with no server side rendering
 // ref: https://github.com/securingsincity/react-ace/issues/1044
@@ -60,14 +60,15 @@ export function ChildAccordion({ index }) {
 
   const [expanded, setExpanded] = React.useState(isExpanded);
 
-  function updateDocumentSummary(newSummary) {
+  function updateDocument(newDoc) {
     const newDocuments = documents.map((doc, idx) => {
       if (idx == index) {
         return {
           ...doc,
+          ...newDoc,
           data: {
             ...doc.data,
-            summary: newSummary,
+            ...newDoc.data, // overwrite with anything new in newDoc
           },
         };
       } else {
@@ -82,10 +83,12 @@ export function ChildAccordion({ index }) {
     setExpanded(!expanded);
   };
 
-  const handleSummaryTextEdit = (event) => {
+  const handleSummaryTextEdit = async (event) => {
     event.stopPropagation(); // Don't want to expand accordion
     setExpanded(true); // always keep open on edit
-    updateDocumentSummary(event.target.value);
+    const newDoc = {...documents[index], data: {...documents[index].data, summary: event.target.value}}
+    const document = await saveDocumentFirestore({ uid: user.uid, document: newDoc });
+    updateDocument(document); // will make sure new ID is included
   };
 
   const handleSummaryTextClick = (event) => {
@@ -95,31 +98,21 @@ export function ChildAccordion({ index }) {
 
   const handleGenerateSummary = async () => {
     setLoading(true);
-    await queryGPT(documents[index].data.content).then((value) => {
-      updateDocumentSummary(value);
-    });
+    const newSummary = await queryGPT(documents[index].data.content)
+    const newDoc = await {...documents[index], data: {...documents[index].data, summary: newSummary}}
+    const document = await saveDocumentFirestore({ uid: user.uid, document: newDoc });
+    updateDocument(document);
     setLoading(false);
   };
 
-  const handleContentEdit = (value) => {
-    const newDocuments = documents.map((doc, idx) => {
-      if (idx == index) {
-        const updatedDoc = {
-          ...doc,
-          data: {
-            ...doc.data,
-            content: value,
-          },
-        };
-        return updatedDoc;
-      } else {
-        return doc;
-      }
-    });
-    setDocuments(newDocuments);
+  const handleContentEdit = async (value) => {
+    const newDoc = {...documents[index], data: {...documents[index].data, content: value}}
+    const document = await saveDocumentFirestore({ uid: user.uid, document: newDoc });
+    updateDocument(document); // will make sure new ID is included
   };
 
   const handleDeleteClick = () => {
+    // TODO: why does this work? uses promises differently
     if (documents[index].id) {
       deleteDocumentFirestore({ uid: user.uid, docId: documents[index].id });
     }

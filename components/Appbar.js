@@ -21,7 +21,6 @@ export default function ButtonAppBar() {
     const results = await saveDocumentsFirestore({
       uid: user.uid,
       documents,
-      setDocuments,
     });
     setDocuments(results);
     await delay(400); // otherwise too fast to see the loader
