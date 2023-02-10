@@ -1,11 +1,10 @@
-// import MenuIcon from '@mui/icons-material/Menu';
-// import Typography from '@mui/material/Typography';
 import * as React from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import SaveIcon from "@mui/icons-material/Save";
 import IconButton from "@mui/material/IconButton";
+import { Typography } from "@mui/material";
 import { saveDocumentsFirestore } from "../lib/firebase";
 import Loader from "./Loader";
 import { useContext } from "react";
@@ -33,6 +32,9 @@ export default function ButtonAppBar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Share SQL
+          </Typography>
           {user && documents ? (
             <IconButton
               size="large"
@@ -47,9 +49,6 @@ export default function ButtonAppBar() {
             </IconButton>
           ) : null}
           <Loader show={isLoading} />
-          {/* <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            News
-          </Typography> */}
         </Toolbar>
       </AppBar>
     </Box>
