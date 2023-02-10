@@ -1,23 +1,24 @@
 import React from "react";
 import Grid from "@mui/material/Grid";
 import { styled } from "@mui/material/styles";
-// import Accordion from "@mui/material/Accordion";
-// import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import MuiAccordionSummary from "@mui/material/AccordionSummary";
 import MuiAccordion from "@mui/material/Accordion";
 import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import dynamic from "next/dynamic";
+import debounce from "lodash.debounce";
 import { Typography } from "@mui/material";
 import { queryGPT } from "@/lib/openai";
 import { UserContext } from "@/lib/context";
 import { deleteDocumentFirestore, saveDocumentFirestore } from "@/lib/firebase";
+
+// only debounce the saving! https://stackoverflow.com/questions/68938631/set-textfield-value-after-debounce-not-working
+
 
 // Need to import CodeEditor with no server side rendering
 // ref: https://github.com/securingsincity/react-ace/issues/1044
@@ -61,35 +62,36 @@ export function ChildAccordion({ index }) {
   const [expanded, setExpanded] = React.useState(isExpanded);
 
   function updateDocument(newDoc) {
-    const newDocuments = documents.map((doc, idx) => {
-      if (idx == index) {
-        return {
-          ...doc,
-          ...newDoc,
-          data: {
-            ...doc.data,
-            ...newDoc.data, // overwrite with anything new in newDoc
-          },
-        };
-      } else {
-        return doc;
-      }
-    });
+    const newDocuments = [...documents];
+    newDocuments[index] = newDoc;
     setDocuments(newDocuments);
   }
 
-  const handleSummaryClick = () => {
+  const handleSummaryClick = (event) => {
     // need this and expanded state so first accordion can stay open
+    event.stopPropagation(); // Don't want to expand accordion
     setExpanded(!expanded);
   };
 
   const handleSummaryTextEdit = async (event) => {
+    event.preventDefault();
     event.stopPropagation(); // Don't want to expand accordion
     setExpanded(true); // always keep open on edit
-    const newDoc = {...documents[index], data: {...documents[index].data, summary: event.target.value}}
-    const document = await saveDocumentFirestore({ uid: user.uid, document: newDoc });
-    updateDocument(document); // will make sure new ID is included
+    const newDoc = {
+      ...documents[index],
+      data: { ...documents[index].data, summary: event.target.value },
+    };
+    updateDocument(newDoc);
+    await saveDocumentFirestore({
+      uid: user.uid,
+      document: newDoc,
+    });
   };
+
+  // const debouncedHandleSummaryEdit = React.useCallback(
+  //   debounce(handleSummaryTextEdit, 500),
+  //   []
+  // );
 
   const handleSummaryTextClick = (event) => {
     event.stopPropagation(); // Don't want to expand accordion
@@ -98,18 +100,35 @@ export function ChildAccordion({ index }) {
 
   const handleGenerateSummary = async () => {
     setLoading(true);
-    const newSummary = await queryGPT(documents[index].data.content)
-    const newDoc = await {...documents[index], data: {...documents[index].data, summary: newSummary}}
-    const document = await saveDocumentFirestore({ uid: user.uid, document: newDoc });
-    updateDocument(document);
+    const newSummary = await queryGPT(documents[index].data.content);
+    const newDoc = await {
+      ...documents[index],
+      data: { ...documents[index].data, summary: newSummary },
+    };
+    updateDocument(await newDoc);
+    await saveDocumentFirestore({
+      uid: user.uid,
+      document: newDoc,
+    });
     setLoading(false);
   };
 
   const handleContentEdit = async (value) => {
-    const newDoc = {...documents[index], data: {...documents[index].data, content: value}}
-    const document = await saveDocumentFirestore({ uid: user.uid, document: newDoc });
-    updateDocument(document); // will make sure new ID is included
+    const newDoc = {
+      ...documents[index],
+      data: { ...documents[index].data, content: value },
+    };
+    updateDocument(newDoc); // will make sure new ID is included
+    await saveDocumentFirestore({
+      uid: user.uid,
+      document: newDoc,
+    });
   };
+
+  // const debouncedHandleContentEdit = React.useCallback(
+  //   debounce(handleContentEdit, 500),
+  //   []
+  // );
 
   const handleDeleteClick = () => {
     // TODO: why does this work? uses promises differently
@@ -142,6 +161,13 @@ export function ChildAccordion({ index }) {
                 label="Summary"
                 variant="standard"
               />
+              {/* <input
+                onClick={handleSummaryTextClick}
+                onChange={debouncedHandleSummaryEdit}
+                type="text"
+                // placeholder="Type a query..."
+                value={documents[index].data.summary}
+              /> */}
             </Grid>
             <Grid item xs={0.5} align="center">
               <IconButton

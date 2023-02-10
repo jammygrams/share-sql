@@ -18,11 +18,10 @@ export default function ButtonAppBar() {
 
   async function handleSave() {
     setLoading(true);
-    const results = await saveDocumentsFirestore({
+    await saveDocumentsFirestore({
       uid: user.uid,
       documents,
     });
-    setDocuments(results);
     await delay(400); // otherwise too fast to see the loader
     setLoading(false);
   }
