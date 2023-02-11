@@ -17,8 +17,6 @@ import { queryGPT } from "@/lib/openai";
 import { UserContext } from "@/lib/context";
 import { deleteDocumentFirestore, saveDocumentFirestore } from "@/lib/firebase";
 
-// TODO: understand the difference in debouncing!
-
 // Need to import CodeEditor with no server side rendering
 // ref: https://github.com/securingsincity/react-ace/issues/1044
 const CodeEditor = dynamic(() => import("./CodeEditor"), { ssr: false });
@@ -51,15 +49,9 @@ const AccordionSummary = styled((props) => (
   },
 }));
 
-// This works because the function isn't recreated everytime ChildAccordion is rerendered (every keystroke)
-const debounceSave = debounce(saveDocumentFirestore, 500); 
-
-export function ChildAccordion({ index }) {
+export function ChildAccordion({ index, isExpanded }) {
   const { user, documents, setDocuments, isLoading, setLoading } =
     React.useContext(UserContext);
-  // make sure first accordion is expanded at start
-  var isExpanded = null;
-  index === 0 ? (isExpanded = true) : (isExpanded = false);
 
   const [expanded, setExpanded] = React.useState(isExpanded);
 
@@ -86,6 +78,12 @@ export function ChildAccordion({ index }) {
     return newDoc;
   };
 
+  // useCallback makes sure function isn't recreated everytime ChildAccordion is rerendered (every keystroke)
+  const debounceSave = React.useCallback(
+    debounce(saveDocumentFirestore, 500),
+    [] // no state variables are affected by this function
+  );
+
   const debouncedHandleSummaryEdit = (event) => {
     const newDoc = handleSummaryTextEdit(event);
     debounceSave({ uid: user.uid, document: newDoc });
@@ -111,25 +109,22 @@ export function ChildAccordion({ index }) {
     setLoading(false);
   };
 
-  const handleContentEdit = async (value) => {
+  const handleContentEdit = (value) => {
     const newDoc = {
       ...documents[index],
       data: { ...documents[index].data, content: value },
     };
     updateDocument(newDoc);
-    await saveDocumentFirestore({
-      uid: user.uid,
-      document: newDoc,
-    });
+    return newDoc;
   };
 
-  const debouncedHandleContentEdit = React.useCallback(
-    debounce(handleContentEdit, 500),
-    []
-  );
+  const debouncedHandleContentEdit = (value) => {
+    const newDoc = handleContentEdit(value);
+    debounceSave({ uid: user.uid, document: newDoc });
+  };
 
   const handleDeleteClick = () => {
-    // TODO: why does this work? uses promises differently
+    // this works bc: doesn't wait for async delete command, and filter is independent
     if (documents[index].id) {
       deleteDocumentFirestore({ uid: user.uid, docId: documents[index].id });
     }

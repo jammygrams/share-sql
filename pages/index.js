@@ -18,7 +18,7 @@ export default function Home() {
   return (
     <>
       {documents.map((doc, idx) => {
-        return <ChildAccordion index={idx} key={idx} />;
+        return <ChildAccordion index={idx} key={idx} isExpanded={idx==0} />;
       })}
       <AddAccordionButton onClick={handleAddAccordion} />
     </>
