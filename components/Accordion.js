@@ -67,26 +67,29 @@ export function ChildAccordion({ index, isExpanded }) {
     setExpanded(!expanded);
   };
 
-  const handleSummaryTextEdit = (event) => {
-    event.stopPropagation(); // Don't want to expand accordion
-    setExpanded(true); // always keep open on edit
-    const newDoc = {
-      ...documents[index],
-      data: { ...documents[index].data, summary: event.target.value },
-    };
-    updateDocument(newDoc);
-    return newDoc;
-  };
-
   // useCallback makes sure function isn't recreated everytime ChildAccordion is rerendered (every keystroke)
   const debounceSave = React.useCallback(
     debounce(saveDocumentFirestore, 500),
     [] // no state variables are affected by this function
   );
 
-  const debouncedHandleSummaryEdit = (event) => {
-    const newDoc = handleSummaryTextEdit(event);
+  const debouncedHandleDocumentChange = (valueMap) => {
+    const newDoc = {
+      ...documents[index],
+      data: { ...documents[index].data, ...valueMap },
+    };
+    updateDocument(newDoc);
     debounceSave({ uid: user.uid, document: newDoc });
+  };
+
+  const handleSummaryChange = (event) => {
+    event.stopPropagation(); // Don't want to expand accordion
+    setExpanded(true); // always keep open on edit
+    debouncedHandleDocumentChange({ summary: event.target.value });
+  };
+
+  const handleContentChange = (value) => {
+    debouncedHandleDocumentChange({ content: value });
   };
 
   const handleSummaryTextClick = (event) => {
@@ -96,31 +99,10 @@ export function ChildAccordion({ index, isExpanded }) {
 
   const handleGenerateSummary = async () => {
     setLoading(true);
+    // TODO: throttle this? add error handling?
     const newSummary = await queryGPT(documents[index].data.content);
-    const newDoc = await {
-      ...documents[index],
-      data: { ...documents[index].data, summary: newSummary },
-    };
-    updateDocument(newDoc);
-    await saveDocumentFirestore({
-      uid: user.uid,
-      document: newDoc,
-    });
+    debouncedHandleDocumentChange({ summary: newSummary });
     setLoading(false);
-  };
-
-  const handleContentEdit = (value) => {
-    const newDoc = {
-      ...documents[index],
-      data: { ...documents[index].data, content: value },
-    };
-    updateDocument(newDoc);
-    return newDoc;
-  };
-
-  const debouncedHandleContentEdit = (value) => {
-    const newDoc = handleContentEdit(value);
-    debounceSave({ uid: user.uid, document: newDoc });
   };
 
   const handleDeleteClick = () => {
@@ -132,51 +114,77 @@ export function ChildAccordion({ index, isExpanded }) {
     setDocuments(newDocuments);
   };
 
+  function returnAccordionDetails() {
+    return (
+      <AccordionDetails>
+        <CodeEditor
+          onCodeChange={handleContentChange}
+          initialValue={documents[index].data.content}
+        />
+        <Button variant="text" onClick={handleGenerateSummary}>
+          Generate Summary
+        </Button>
+      </AccordionDetails>
+    );
+  }
+
+  function returnAccordionDetails() {
+    return (
+      <AccordionDetails>
+        <CodeEditor
+          onCodeChange={handleContentChange}
+          initialValue={documents[index].data.content}
+        />
+        <Button variant="text" onClick={handleGenerateSummary}>
+          Generate Summary
+        </Button>
+      </AccordionDetails>
+    );
+  }
+
+  function returnAccordionSummary() {
+    return (
+      <AccordionSummary
+        aria-controls="panel1d-content"
+        id="panel1d-header"
+        onClick={handleSummaryClick}
+      >
+        <Grid container spacing={1} alignItems="center">
+          <Grid item xs={0.5} style={{ textAlign: "center" }}>
+            <Typography variant="button">{`${index + 1}.`}</Typography>
+          </Grid>
+          <Grid item xs={11.0}>
+            <TextField
+              fullWidth
+              onClick={handleSummaryTextClick}
+              onChange={handleSummaryChange}
+              id="standard-basic"
+              value={documents[index].data.summary}
+              label="Summary"
+              variant="standard"
+            />
+          </Grid>
+          <Grid item xs={0.5} align="center">
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="delete"
+              onClick={handleDeleteClick}
+              sx={{ mr: 2 }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Grid>
+        </Grid>
+      </AccordionSummary>
+    );
+  }
+
   return (
     <div>
       <Accordion expanded={expanded}>
-        <AccordionSummary
-          aria-controls="panel1d-content"
-          id="panel1d-header"
-          onClick={handleSummaryClick}
-        >
-          <Grid container spacing={1} alignItems="center">
-            <Grid item xs={0.5} style={{ textAlign: "center" }}>
-              <Typography variant="button">{`${index + 1}.`}</Typography>
-            </Grid>
-            <Grid item xs={11.0}>
-              <TextField
-                fullWidth
-                onClick={handleSummaryTextClick}
-                onChange={debouncedHandleSummaryEdit}
-                id="standard-basic"
-                value={documents[index].data.summary}
-                label="Summary"
-                variant="standard"
-              />
-            </Grid>
-            <Grid item xs={0.5} align="center">
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="delete"
-                onClick={handleDeleteClick}
-                sx={{ mr: 2 }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
-          </Grid>
-        </AccordionSummary>
-        <AccordionDetails>
-          <CodeEditor
-            onCodeChange={debouncedHandleContentEdit}
-            initialValue={documents[index].data.content}
-          />
-          <Button variant="text" onClick={handleGenerateSummary}>
-            Generate Summary
-          </Button>
-        </AccordionDetails>
+        {returnAccordionSummary()}
+        {returnAccordionDetails()}
       </Accordion>
     </div>
   );

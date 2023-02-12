@@ -12,7 +12,6 @@ export default function CodeEditor({ onCodeChange, initialValue }) {
       mode="mysql"
       theme="monokai"
       // name="blah2"
-      //   onLoad={this.onLoad}
       width="100%"
       showPrintMargin={false}
       onChange={onCodeChange}

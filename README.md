@@ -13,7 +13,7 @@
     * save button. (done)
 * Change save to debounce on typing (done)
 * how to test?
-* Come up with design v2 - tough, ask kaiden
+* Come up with design v2
     * just have preview of sql viewable in each box at start? all slightly open?
 * teams / multiplayer
 
@@ -25,8 +25,7 @@
 * format user input sql into proper sql, will be important for gpt (requires thought - existing solution?)
     * don't want to overwrite user preferences on writing? have it be a button?
 * convert anonymous login to google login
-* close / open all accordions (low)
-* toast for save complete? duplicates loading bar? (low)
+* remove save button and just have global save indicator, with check mark when save is complete
 * if user has already written something, incorporate into generation? (maybe not?)
 
 **other**
