@@ -3,6 +3,7 @@ import { CodemirrorBinding } from "y-codemirror";
 import { UnControlled as CodeMirrorEditor } from "react-codemirror2";
 import * as Y from "yjs";
 import { WebrtcProvider } from "y-webrtc";
+import { IndexeddbPersistence } from 'y-indexeddb'
 import "./Editor.css";
 import RandomColor from "randomcolor";
 import "./EditorAddons";
@@ -34,7 +35,7 @@ export function Editor(props) {
             'wss://y-webrtc-signaling-us.herokuapp.com'
           ]
         });
-        console.log("Connection created: ", provider)
+        let index_provider = new IndexeddbPersistence(ROOM_NAME, ydoc)
         const yText = ydoc.getText("codemirror");
         const yUndoManager = new Y.UndoManager(yText);
         const awareness = provider.awareness; //awareness is what makes other user aware about your actions 
@@ -76,6 +77,7 @@ export function Editor(props) {
       <CodeMirrorEditor
         onChange={(editor, data, value) => {
           setCode(value);
+          // console.log(code)
         }}
         autoScroll
         options={{
