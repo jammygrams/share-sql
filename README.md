@@ -1,8 +1,11 @@
 ## Share-sql
 
+### Instructions
+1. Start server: `PORT=4444 node ./bin/server.js`. [Reference](https://github.com/yjs/y-webrtc#signaling) (using public yjs servers is very erratic)
+2. `npm run dev`
+3. Open up `localhost:3000` in two browsers!
 
 ### TODO
-* offline persistance (done)
 * user model
     * anon log in by default, creates new room name
     * click to get room name / url to share
