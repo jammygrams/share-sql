@@ -1,32 +1,33 @@
-# Share SQL
+## Share-sql
 
-## Todo
-**major features**
-* Data persists in firestore
-    * anonymous firestore login in _app.js (done)
-    * when login, create doc for the user, with user id (done)
-    * for user, if no code data, create tutorial post (done)
-    * load user posts and display them (done)
-    * move state up to _app.js (which runs on top of index), and turn into context so easier to access everywhere (done)
-    * all accordions need to write document state by index. (done)
-    * save button. (done)
-* Come up with design v2 - tough, ask kaiden
-    * just have preview of sql viewable in each box at start? all slightly open?
-* teams
-* multiplayer
+### Instructions
+1. Copy [project firebase config](https://console.firebase.google.com/project/share-sql/settings/general/web:N2Y3NTgyMzUtZmNkNi00MzE1LWFhYjUtZjFjNzQ2MDEwMTUy) into `./firebase.config.js`
+1. Start WebRTC signalling server: `PORT=4444 node ./bin/server.js`.
+    * [Reference](https://github.com/yjs/y-webrtc#signaling)
+    * using public yjs servers is very erratic
+1. Run `npm run dev`
+1. Open up `localhost:3000` in two browsers!
 
-**Smaller tasks**
-* have code editor box expand all the width (do)
-* "remove accordion" button and update doc (may be painful again) (do)
-* Host online and share (do)
-* Change save to debounce on typing?
-* display tables used in query in summary
-* format user input sql into proper sql, will be important for gpt (requires thought - existing solution?)
-    * don't want to overwrite user preferences on writing? have it be a button?
-* convert anonymous login to google login
-* close / open all accordions (low)
-* toast for save complete? duplicates loading bar? (low)
-* if user has already written something, incorporate into generation? (maybe not?)
+### TODO
+* Get baseline working on Next.js (done)
+* Anon log in creates new room per user, and username. (done)
+* Users can access same room by url (done)
+* Fix caret for user awareness.
+* Display default query
+* big: backup document in firestore 
+    * editor.js editor sends update to webrtc / websocket server on doc update
+    * server recieves updates in map per doc ID
+    * every 5 seconds server writes array of updates to firestore, and clears stored updates
+    * when you connect to a room from frontend, 
+        * keep local index db as well? and load from here first?
+        * try to load from firestore?
+* Improve styling / features with codemirror2
+* Is highlighting tables used a worthwhile feature? how to work?
+* Select query to generate summary with GPT?
+* Multiple pages per room, on left hand side tab?
 
-**other**
-* tests?
+### Low priority
+* understand web socket failure?
+    * Answer: Was yjs servers being shit. switching to self hosted server works.
+* understand how useRef works vs. useState for editorRef?
+* clean up firebase config in git history

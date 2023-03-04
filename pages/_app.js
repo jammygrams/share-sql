@@ -1,38 +1,41 @@
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import ButtonAppBar from "@/components/Appbar";
+import { useState, useEffect } from "react";
 import { UserContext } from "../lib/context";
-import { setUpUserAndDocs } from "../lib/firebase";
-import React, { useEffect } from "react";
-
-const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-  },
-});
+import { anonSignIn, createNewUser, getUserData, isNewUser } from "../lib/firebase";
+import "@/styles/globals.css";
+import Loader from "../components/Loader";
 
 export default function App({ Component, pageProps }) {
-  const [user, setUser] = React.useState(null); // user is not nec as state as not used
-  const [documents, setDocuments] = React.useState([]);
-  const [isLoading, setLoading] = React.useState(false);
+  const [user, setUser] = useState(null);
+  const [username, setUsername] = useState(null);
 
   useEffect(() => {
-    setLoading(true)
-    setUpUserAndDocs({ documents, setDocuments, setUser }).then(() => {setLoading(false)})
+    async function initialize() {
+      if (!user) {
+        const authUser = await anonSignIn();
+        const uid = authUser.uid;
+        setUser(authUser);
+        console.log(`User ${authUser.uid} logged in`)
+        if (await isNewUser(uid)) {
+          username = await createNewUser(uid);
+          setUsername(username);
+          console.log(`Created username ${username}`)
+        } else {
+          const userData = await getUserData(uid);
+          setUsername(userData.username);
+        }
+      }
+    }
+    initialize();
   }, []);
+
+  if (!user && !username) {
+    return <Loader show />
+  }
 
   return (
     <>
-      <UserContext.Provider
-        value={{ user, documents, setDocuments, isLoading, setLoading }}
-      >
-        <ThemeProvider theme={darkTheme}>
-          <CssBaseline />
-          <ButtonAppBar />
-          <Component
-            {...pageProps}
-          />
-        </ThemeProvider>
+      <UserContext.Provider value={{ user, username }}>
+        <Component {...pageProps} />
       </UserContext.Provider>
     </>
   );
