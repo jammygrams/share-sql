@@ -1,9 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IndexeddbPersistence } from "y-indexeddb";
-import "./Editor.module.css";
 import RandomColor from "randomcolor";
+import Loader from "./Loader.js"
 
-const ROOM_NAME = "test-room-jhamat";
+// TODO: remote caret style not working?
+import styles from "../styles/Editor.module.css"
+
 
 // Need to load packages in client side only, otherwise get "navigator is not defined" error
 //  (anything loaded in `useEffect` call is client side only)
@@ -17,6 +19,7 @@ async function loadDependencies() {
     import("yjs") // need to import this on client side else get "Yjs already imported error"
   ]);
   await import("./EditorAddons");
+  await import("codemirror/mode/sql/sql");
   return {
     CodemirrorBinding,
     WebrtcProvider,
@@ -25,10 +28,10 @@ async function loadDependencies() {
   };
 }
 
-export default function Editor(props) {
+export default function Editor({ roomId, username }) {
   const [EditorRef, setEditorRef] = useState(null);
   const [code, setCode] = useState("");
-  const [CodeMirrorEditor, setCodeMirror] = useState(Loading);
+  const [CodeMirrorEditor, setCodeMirror] = useState(Loader({ show: true }));
 
   const handleEditorDidMount = (editor) => {
     // wait for editor to load before setting reference
@@ -52,11 +55,6 @@ export default function Editor(props) {
       "Ctrl-Space": "autocomplete",
     },
   };
-  
-  function Loading() {
-    // TODO: change to something more elegant
-    return <div>Loading</div>;
-  }
 
   function returnCodeMirror({ UnControlled, options }) {
     return (
@@ -80,28 +78,23 @@ export default function Editor(props) {
         await loadDependencies();
       setCodeMirror(returnCodeMirror({ UnControlled, options }));
       if (EditorRef) {
-        // i.e. editor exists
+        // i.e. editor has loaded
         const ydoc = new Y.Doc();
         try {
-          provider = new WebrtcProvider(ROOM_NAME, ydoc, {
+          provider = new WebrtcProvider(roomId, ydoc, {
             signaling: [
-              // These keep failing / very slow to load?
-              // "wss://signaling.yjs.dev",
-              // "wss://y-webrtc-signaling-eu.herokuapp.com",
-              // "wss://y-webrtc-signaling-us.herokuapp.com",
               'ws://localhost:4444'
             ],
           });
-          let index_provider = new IndexeddbPersistence(ROOM_NAME, ydoc);
+          let indexProvider = new IndexeddbPersistence(roomId, ydoc);
           const yText = ydoc.getText("codemirror");
           const yUndoManager = new Y.UndoManager(yText);
           // awareness makes other user aware about your actions
           const awareness = provider.awareness;
-          const color = RandomColor();
 
           awareness.setLocalStateField("user", {
-            name: "Users Name",
-            color: color,
+            name: username,
+            color: RandomColor(),
           });
 
           const getBinding = new CodemirrorBinding(
@@ -113,7 +106,7 @@ export default function Editor(props) {
             }
           );
         } catch (err) {
-          alert("error in collaborating try refreshing or come back later !");
+          alert("Error!");
           console.log(err);
         }
       }
@@ -121,9 +114,10 @@ export default function Editor(props) {
     initialize();
     return () => {
       // if useEffect returns a function, it is cleanup: runs on unmount
+      // TODO: unclear if we really need this?
       if (provider) {
-        provider.disconnect(); //We destroy doc we created and disconnect
-        ydoc.destroy(); //the provider to stop propagting changes if user leaves editor
+        provider.disconnect(); // We destroy doc we created and disconnect
+        ydoc.destroy(); // the provider to stop propagting changes if user leaves editor
       }
     };
   }, [EditorRef]);
